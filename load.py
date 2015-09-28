@@ -5,7 +5,6 @@ from abc import ABCMeta, abstractmethod
 
 class Loader(object):
     'General loader class'
-
     __metaclass__ = ABCMeta
 
     # return next test instance
