@@ -22,9 +22,9 @@ class Viterbi:
             weights_dict[tokens[0]] = float(tokens[1])
 
     # this method computes the local features given a word and its context
-    def get_local_score(self, prev_word, curr_word, next_word, prev_tag, curr_tag):
+    def get_local_score(self, prev, curr, next, prev_ner_tag, curr_ner_tag, token_nbr):
         feats = {}
-        self.feature_gen.get_feature_vector(prev_word, curr_word, next_word, prev_tag, curr_tag, feats)
+        self.feature_gen.get_feature_vector(prev, curr, next, prev_ner_tag, curr_ner_tag, token_nbr, feats)
         score = 0.0
         for key, value in feats.iteritems():
             score = score + (value * self.weights.get(key, 0.0))
@@ -36,12 +36,12 @@ class Viterbi:
         for i in class_indices:
             max_score = 0.0
             backpointer = 0
-            curr_tag = self.classes[i]
+            curr_ner_tag = self.classes[i]
             # check for STOP
             for j in class_indices:
-                prev_tag = self.classes[j]
+                prev_ner_tag = self.classes[j]
                 prev_score = self.trellis[j][token_nbr-1][0]
-                score = prev_score * self.get_local_score(prev, curr, next, prev_tag, curr_tag)
+                score = prev_score * self.get_local_score(prev, curr, next, prev_ner_tag, curr_ner_tag, token_nbr)
                 if score > max_score:
                     max_score = score
                     backpointer = j
@@ -55,4 +55,4 @@ class Viterbi:
             sequence.append(bp)
             bp = self.trellis[bp][i][1]
         for class_index in reversed(sequence):
-            result.add(self.classes[class_index])
+            result.append(self.classes[class_index])

@@ -13,17 +13,19 @@ import argparse
 parser = argparse.ArgumentParser(description='read the arguments')
 parser.add_argument('--test', help='test file')
 parser.add_argument('--weights', help='weights file for the features')
+parser.add_argument('--gazetteer', help='gazetteer file')
 parser.add_argument('--output', help='file to write outputs')
 args = parser.parse_args()
 
 # define NER classes as a dict
-classes = {'0': 'B-PER', '1': 'B-LOC', '2': 'B-ORG', \
-           '3': 'I-PER', '4': 'I-LOC', '5': 'I-ORG', \
-           '5': 'O'}
+classes = {0: 'B-PER', 1: 'B-LOC', 2: 'B-ORG', \
+           3: 'I-PER', 4: 'I-LOC', 5: 'I-ORG', \
+           5: 'O'}
 
 # load 'test'
 loader = CoNLL2k3Loader('dummy', args.test, args.output)
 weights_fname = args.weights
+gazetteer = args.gazetteer
 
 # for each sentence in test, each sentence is a list of word tokens
 sentence = []
@@ -32,7 +34,7 @@ while sentence is not None:
     # get window tokens from this sentence
     window_tokens = loader.get_window_tokens(sentence)
     # instantiate viterbi decoder for this sentence
-    viterbi = Viterbi(len(sentence), classes, weights_fname)
+    viterbi = Viterbi(len(sentence), classes, weights_fname, gazetteer)
     # for each token in sentence
     token_nbr = 0
     for (prev, curr, next) in window_tokens:

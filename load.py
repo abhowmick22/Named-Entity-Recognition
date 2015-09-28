@@ -51,13 +51,13 @@ class CoNLL2k3Loader(Loader):
         tokens = []
         self.get_tokens(point, tokens)
         iterator = iter(tokens)
-        prev = None
+        prev = ('<START>', '<START>', 'O', 'O')
         item = iterator.next()  # throws StopIteration if empty.
         for next in iterator:
             yield (prev,item,next)
             prev = item
             item = next
-        yield (prev,item,None)
+        yield (prev,item,('<STOP>', '<STOP>', 'O', 'O'))
 
     # method to write the output
     def write_output(self, output, sentence):
