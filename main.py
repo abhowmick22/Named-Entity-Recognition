@@ -36,6 +36,8 @@ while sentence is not None:
     # for each token in sentence
     token_nbr = 0
     for (prev, curr, next) in window_tokens:
+        if token_nbr > 0:
+            break
         # get local scores for each class supplying current word and previous word info
         #feature_vector = viterbi.get_local_features(prev, curr, next)
         # invoke viterbi to populate trellis at ith position

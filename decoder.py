@@ -11,7 +11,7 @@ class Viterbi:
     def __init__(self, length, classes, weights, gazetteer):
         self.length = length
         self.classes = classes
-        self.trellis = [[(0.0, 'dummy') for i in range(length)] for j in range(len(classes))]
+        self.trellis = [[(0.0, 0) for i in range(length)] for j in range(len(classes))]
         self.weights = {}
         self.read_weights(weights, self.weights)
         self.feature_gen = FeatGenerator(gazetteer)
@@ -30,7 +30,10 @@ class Viterbi:
                                             next_word, next_pos_tag, prev_ner_tag, curr_ner_tag, token_nbr, feats)
         score = 0.0
         for key, value in feats.iteritems():
-            score = score + (value * self.weights.get(key, 0.0))
+            increment = (value * self.weights.get(key, 0.0))
+            score = score + increment
+            if increment > 0.0 and curr_ner_tag is 'O':
+                print key, value
         return math.log(score) if score > 0.0 else -100.0
 
     # computes the maximums and updates column of the trellis

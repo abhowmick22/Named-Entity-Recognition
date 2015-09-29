@@ -51,7 +51,7 @@ class CoNLL2k3Loader(Loader):
         tokens = []
         self.get_tokens(point, tokens)
         iterator = iter(tokens)
-        prev = ('<START>', '<START>', '<START', '<START')
+        prev = ('<START>', '<START>', '<START>', '<START>')
         item = iterator.next()  # throws StopIteration if empty.
         for next in iterator:
             yield (prev,item,next)
