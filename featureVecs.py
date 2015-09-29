@@ -12,14 +12,8 @@ class FeatGenerator:
             tokens = line.split()
             self.gazetteer[tokens[1]] = tokens[0]
 
-    def get_feature_vector(self, prev, curr, next, prev_ner_tag, curr_ner_tag, token_nbr, features):
-        # extract the word and pos tag from prev, curr and next
-        prev_word = prev[0]
-        prev_pos_tag = prev[1]
-        curr_word = curr[0]
-        curr_pos_tag = curr[1]
-        next_word = next[0]
-        next_pos_tag = next[1]
+    def get_feature_vector(self, prev_word, prev_pos_tag, curr_word, curr_pos_tag, \
+                           next_word, next_pos_tag, prev_ner_tag, curr_ner_tag, token_nbr, features):
 
         ner_tag_suffix = ':Ti=' + curr_ner_tag
         feature_keys = []
@@ -37,11 +31,17 @@ class FeatGenerator:
 
         # feature 5
         feature_keys.append('Wi-1=' + prev_word + ner_tag_suffix)
+        if prev_word is not '<START>':
+            feature_keys.append('Oi-1=' + prev_word.lower() + ner_tag_suffix)
+            feature_keys.append('Si-1=' + self.get_shape(prev_word) + ner_tag_suffix)
         feature_keys.append('Pi-1=' + prev_pos_tag + ner_tag_suffix)
         feature_keys.append('Wi+1=' + next_word + ner_tag_suffix)
+        if next_word is not '<STOP>':
+            feature_keys.append('Oi+1=' + next_word.lower() + ner_tag_suffix)
+            feature_keys.append('Si+1=' + self.get_shape(next_word) + ner_tag_suffix)
         feature_keys.append('Pi+1=' + next_pos_tag + ner_tag_suffix)
-        # we don't really need equivalents of features 2 and 4
         # change feature 7 if you add 2 or 4
+        features_type1to5 = len(feature_keys)       # will be useful for feature of type 7
 
         # feature 6
         for i in range(4):
@@ -54,7 +54,7 @@ class FeatGenerator:
         # feature 7
         part = 'Ti-1=' + prev_ner_tag + ner_tag_suffix
         feature_keys.append(part)
-        for i in range(8):
+        for i in range(features_type1to5):
             feature_keys.append(feature_keys[i].split(':')[0] + ':' + part)
 
         # feature 8
@@ -74,7 +74,7 @@ class FeatGenerator:
         # feature 11
         feature_keys.append('POSi=' + str(token_nbr+1) + ner_tag_suffix)
 
-
+        # build feature vector
         for key in feature_keys:
             features[key] = 1.0
 

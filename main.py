@@ -15,10 +15,10 @@ parser.add_argument('--gazetteer', help='gazetteer file')
 parser.add_argument('--output', help='file to write outputs')
 args = parser.parse_args()
 
-# define NER classes as a dict
-classes = {0: 'B-PER', 1: 'B-LOC', 2: 'B-ORG', \
-           3: 'I-PER', 4: 'I-LOC', 5: 'I-ORG', \
-           5: 'O'}
+# define 9 NER classes as a dict
+classes = {0: 'B-LOC', 1: 'B-MISC', 2: 'B-ORG', 3: 'B-PER', \
+           4: 'I-LOC', 5: 'I-MISC', 6: 'I-ORG', 7: 'I-PER', \
+           8: 'O'}
 
 # load 'test'
 loader = CoNLL2k3Loader('dummy', args.test, args.output)
@@ -35,9 +35,7 @@ while sentence is not None:
     viterbi = Viterbi(len(sentence), classes, weights_fname, gazetteer)
     # for each token in sentence
     token_nbr = 0
-    print sentence
     for (prev, curr, next) in window_tokens:
-        print prev, curr, next
         # get local scores for each class supplying current word and previous word info
         #feature_vector = viterbi.get_local_features(prev, curr, next)
         # invoke viterbi to populate trellis at ith position

@@ -1,5 +1,6 @@
 __author__ = 'abhishek'
 from featureVecs import FeatGenerator
+import math
 
 # This module implements the Viterbi algorithm
 # use the weights to compute the score
@@ -22,26 +23,39 @@ class Viterbi:
             weights_dict[tokens[0]] = float(tokens[1])
 
     # this method computes the local features given a word and its context
-    def get_local_score(self, prev, curr, next, prev_ner_tag, curr_ner_tag, token_nbr):
+    def get_log_local_score(self, prev_word, prev_pos_tag, curr_word, curr_pos_tag, \
+                        next_word, next_pos_tag, prev_ner_tag, curr_ner_tag, token_nbr):
         feats = {}
-        self.feature_gen.get_feature_vector(prev, curr, next, prev_ner_tag, curr_ner_tag, token_nbr, feats)
+        self.feature_gen.get_feature_vector(prev_word, prev_pos_tag, curr_word, curr_pos_tag, \
+                                            next_word, next_pos_tag, prev_ner_tag, curr_ner_tag, token_nbr, feats)
         score = 0.0
         for key, value in feats.iteritems():
             score = score + (value * self.weights.get(key, 0.0))
-        return score
+        return math.log(score) if score > 0.0 else -100.0
 
     # computes the maximums and updates column of the trellis
     def update_trellis(self, prev, curr, next, token_nbr):
         class_indices = range(len(self.classes))
+        # extract the word and pos tag from prev, curr and next
+        prev_word = prev[0]
+        prev_pos_tag = prev[1]
+        curr_word = curr[0]
+        curr_pos_tag = curr[1]
+        next_word = next[0]
+        next_pos_tag = next[1]
         for i in class_indices:
             max_score = 0.0
             backpointer = 0
             curr_ner_tag = self.classes[i]
-            # check for STOP
+            # check for STOP and START
             for j in class_indices:
                 prev_ner_tag = self.classes[j]
-                prev_score = self.trellis[j][token_nbr-1][0]
-                score = prev_score * self.get_local_score(prev, curr, next, prev_ner_tag, curr_ner_tag, token_nbr)
+                if token_nbr is 0:
+                    prev_score = 0.0
+                else:
+                    prev_score = self.trellis[j][token_nbr-1][0]
+                score = prev_score + self.get_log_local_score(prev_word, prev_pos_tag, curr_word, curr_pos_tag, \
+                                                          next_word, next_pos_tag, prev_ner_tag, curr_ner_tag, token_nbr)
                 if score > max_score:
                     max_score = score
                     backpointer = j
