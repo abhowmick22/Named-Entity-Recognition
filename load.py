@@ -51,14 +51,16 @@ class CoNLL2k3Loader(Loader):
         tokens = []
         self.get_tokens(point, tokens)
         iterator = iter(tokens)
-        prev = ('<START>', '<START>', 'O', 'O')
+        prev = ('<START>', '<START>', 'O', '<START')
         item = iterator.next()  # throws StopIteration if empty.
         for next in iterator:
             yield (prev,item,next)
             prev = item
             item = next
-        yield (prev,item,('<STOP>', '<STOP>', 'O', 'O'))
+        yield (prev,item,('<STOP>', '<STOP>', 'O', '<STOP>'))
 
     # method to write the output
     def write_output(self, output, sentence):
-        pass
+        pairs = zip(output, sentence)
+        for op, token in pairs:
+            self.output_file.write(token + ' ' + op + '\n')

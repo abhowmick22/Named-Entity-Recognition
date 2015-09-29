@@ -1,10 +1,8 @@
 __author__ = 'abhishek'
-#!/usr/bin/python
 
 # This is the driver program that parses command line arguments and performs NER
 
 import featureVecs
-import featureFuncs
 from load import CoNLL2k3Loader
 from decoder import Viterbi
 import argparse
@@ -37,7 +35,9 @@ while sentence is not None:
     viterbi = Viterbi(len(sentence), classes, weights_fname, gazetteer)
     # for each token in sentence
     token_nbr = 0
+    print sentence
     for (prev, curr, next) in window_tokens:
+        print prev, curr, next
         # get local scores for each class supplying current word and previous word info
         #feature_vector = viterbi.get_local_features(prev, curr, next)
         # invoke viterbi to populate trellis at ith position

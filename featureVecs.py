@@ -79,7 +79,5 @@ class FeatGenerator:
             features[key] = 1.0
 
 
-
-
     def get_shape(self, word):
         return "".join(['A' if c.isupper() else 'a' for c in word])
