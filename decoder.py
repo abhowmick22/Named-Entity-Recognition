@@ -1,6 +1,5 @@
 __author__ = 'abhishek'
 from featureVecs import FeatGenerator
-import math
 
 # This module implements the Viterbi algorithm
 # use the weights to compute the score
@@ -23,7 +22,7 @@ class Viterbi:
             weights_dict[tokens[0]] = float(tokens[1])
 
     # this method computes the local features given a word and its context
-    def get_log_local_score(self, prev_word, prev_pos_tag, curr_word, curr_pos_tag, \
+    def get_local_score(self, prev_word, prev_pos_tag, curr_word, curr_pos_tag, \
                         next_word, next_pos_tag, prev_ner_tag, curr_ner_tag, token_nbr):
         feats = {}
         self.feature_gen.get_feature_vector(prev_word, prev_pos_tag, curr_word, curr_pos_tag, \
@@ -32,9 +31,9 @@ class Viterbi:
         for key, value in feats.iteritems():
             increment = (value * self.weights.get(key, 0.0))
             score = score + increment
-            if increment > 0.0 and curr_ner_tag is 'O':
-                print key, value
-        return math.log(score) if score > 0.0 else -100.0
+            #if curr_ner_tag is 'O':
+                #print key, value
+        return score
 
     # computes the maximums and updates column of the trellis
     def update_trellis(self, prev, curr, next, token_nbr):
@@ -57,7 +56,7 @@ class Viterbi:
                     prev_score = 0.0
                 else:
                     prev_score = self.trellis[j][token_nbr-1][0]
-                score = prev_score + self.get_log_local_score(prev_word, prev_pos_tag, curr_word, curr_pos_tag, \
+                score = prev_score + self.get_local_score(prev_word, prev_pos_tag, curr_word, curr_pos_tag, \
                                                           next_word, next_pos_tag, prev_ner_tag, curr_ner_tag, token_nbr)
                 if score > max_score:
                     max_score = score

@@ -1,4 +1,5 @@
 __author__ = 'abhishek'
+import re
 
 # This module operates on the feature vectors
 
@@ -14,9 +15,8 @@ class FeatGenerator:
 
     def get_feature_vector(self, prev_word, prev_pos_tag, curr_word, curr_pos_tag, \
                            next_word, next_pos_tag, prev_ner_tag, curr_ner_tag, token_nbr, features):
-
-        if prev_word is '<START':
-            prev_ner_tag = '<START>'
+        if prev_word == '<START>':
+            prev_ner_tag = prev_word
 
         ner_tag_suffix = ':Ti=' + curr_ner_tag
         feature_keys = set()
@@ -34,17 +34,17 @@ class FeatGenerator:
 
         # feature 5
         feature_keys.add('Wi-1=' + prev_word + ner_tag_suffix)
-        if prev_word is not '<START>':
-            feature_keys.add('Oi-1=' + prev_word.lower() + ner_tag_suffix)
-        else:
+        if prev_word == '<START>':
             feature_keys.add('Oi-1=<START>' + ner_tag_suffix)
+        else:
+            feature_keys.add('Oi-1=' + prev_word.lower() + ner_tag_suffix)
         feature_keys.add('Si-1=' + self.get_shape(prev_word) + ner_tag_suffix)
         feature_keys.add('Pi-1=' + prev_pos_tag + ner_tag_suffix)
         feature_keys.add('Wi+1=' + next_word + ner_tag_suffix)
-        if next_word is not '<STOP>':
-            feature_keys.add('Oi+1=' + next_word.lower() + ner_tag_suffix)
-        else:
+        if next_word == '<STOP>':
             feature_keys.add('Oi+1=<STOP>' + ner_tag_suffix)
+        else:
+            feature_keys.add('Oi+1=' + next_word.lower() + ner_tag_suffix)
         feature_keys.add('Si+1=' + self.get_shape(next_word) + ner_tag_suffix)
         feature_keys.add('Pi+1=' + next_pos_tag + ner_tag_suffix)
         # change feature 7 if you add 2 or 4
@@ -60,35 +60,33 @@ class FeatGenerator:
             feature_keys.add(part + ':Wi-1=' + prev_word + ner_tag_suffix)
             feature_keys.add(part + ':Pi-1=' + prev_pos_tag + ner_tag_suffix)
             feature_keys.add(part + ':Si-1=' + self.get_shape(prev_word) + ner_tag_suffix)
-            if prev_word is not '<START>':
-                feature_keys.add(part + ':Oi-1=' + prev_word.lower() + ner_tag_suffix)
-            else:
+            if prev_word == '<START>':
                 feature_keys.add(part + ':Oi-1=<START>' + ner_tag_suffix)
+            else:
+                feature_keys.add(part + ':Oi-1=' + prev_word.lower() + ner_tag_suffix)
             feature_keys.add(part + ':Wi+1=' + next_word + ner_tag_suffix)
             feature_keys.add(part + ':Pi+1=' + next_pos_tag + ner_tag_suffix)
             feature_keys.add(part + ':Si+1=' + self.get_shape(next_word) + ner_tag_suffix)
-            if next_word is not '<STOP>':
-                feature_keys.add(part + ':Oi+1=' + next_word.lower() + ner_tag_suffix)
-            else:
+            if next_word == '<STOP>':
                 feature_keys.add(part + ':Oi+1=<STOP>' + ner_tag_suffix)
+            else:
+                feature_keys.add(part + ':Oi+1=' + next_word.lower() + ner_tag_suffix)
 
         # feature 7
         part = 'Ti-1=' + prev_ner_tag + ner_tag_suffix
         feature_keys.add(part)
         for f in features_type1to5:
-            feature_keys.add(f.split(':')[0] + ':' + part)
+            feature_keys.add(f.rsplit(':', 1)[0] + ':' + part)
 
         # feature 8
         for i in range(min(len(curr_word), 4)):
             feature_keys.add('PREi=' + curr_word[:i+1] + ner_tag_suffix)
 
         # feature 9
-        if curr_ner_tag is not 'O':
-            tag = curr_ner_tag.split('-')[1]
-            if self.gazetteer.get(curr_word, '') is tag:
-                feature_keys.add('GAZi=True' + ner_tag_suffix)
-            else:
-                feature_keys.add('GAZi=False' + ner_tag_suffix)
+        if curr_ner_tag != 'O' and self.gazetteer.get(curr_word, '') == curr_ner_tag.split('-')[1]:
+            feature_keys.add('GAZi=True' + ner_tag_suffix)
+        else:
+            feature_keys.add('GAZi=False' + ner_tag_suffix)
 
         # feature 10
         if curr_word[0].isupper():
@@ -105,13 +103,17 @@ class FeatGenerator:
                 features[key] = features[key] + 1.0
             else:
                 features[key] = 1.0
-            if features[key] > 1.0:
-                print key, features[key], 'greater'
+            #if features[key] >= 1.0:
+                #print key, features[key], 'greater'
 
 
     # add handling for start and stop
     def get_shape(self, word):
-        if word is '<START>' or '<STOP>':
+        if word == '<START>' or word == '<STOP>' or not self.reg_string(word):
             return word
         else:
             return "".join(['A' if c.isupper() else 'a' for c in word])
+
+    def reg_string(self, word):
+        reg=re.compile('^[A-Za-z]+$')
+        return reg.match(word)
